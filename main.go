@@ -1,31 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"net/http/httputil"
+	"flag"
 	"os"
+
+	"github.com/peterbourgon/ff"
 )
 
 func main() {
-	httpAddress := os.Getenv("HTTP_ADDRESS")
-	if "" == httpAddress {
-		httpAddress = ":8080"
-	}
+	fs := flag.NewFlagSet("echo-echo", flag.ExitOnError)
+	_ = fs.String("config", "", "config file (optional)")
 
-	http.HandleFunc("/", httpHandler)
-	log.Println("Listening for HTTP on", httpAddress)
-	log.Fatal(http.ListenAndServe(httpAddress, nil))
+	httpSvc := &HTTPEchoService{}
+	httpSvc.Flags(fs)
+
+	ff.Parse(fs, os.Args[1:],
+		ff.WithConfigFileFlag("config"),
+		ff.WithConfigFileParser(ff.PlainParser),
+	)
+
+	httpSvc.Run()
 }
 
-func httpHandler(w http.ResponseWriter, r *http.Request) {
-	dump, err := httputil.DumpRequest(r, true)
-	if err != nil {
-		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write(dump)
+type EchoService interface {
+	Flags(*flag.FlagSet)
+	Run()
 }
