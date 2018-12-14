@@ -1,6 +1,9 @@
 FROM golang AS gobuilder
+ENV GO111MODULE="on"
 WORKDIR /go/src/github.com/jmhobbs/echo-echo
-ADD main.go /go/src/github.com/jmhobbs/echo-echo/main.go
+ADD go.* /go/src/github.com/jmhobbs/echo-echo/
+RUN go mod download
+ADD *.go /go/src/github.com/jmhobbs/echo-echo/
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o echo-echo .
 
 FROM scratch

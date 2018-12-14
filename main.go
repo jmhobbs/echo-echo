@@ -14,12 +14,19 @@ func main() {
 	httpSvc := &HTTPEchoService{}
 	httpSvc.Flags(fs)
 
+	tcpSvc := &TCPEchoService{}
+	tcpSvc.Flags(fs)
+
 	ff.Parse(fs, os.Args[1:],
 		ff.WithConfigFileFlag("config"),
 		ff.WithConfigFileParser(ff.PlainParser),
 	)
 
-	httpSvc.Run()
+	go httpSvc.Run()
+	go tcpSvc.Run()
+
+	done := make(chan bool)
+	<-done
 }
 
 type EchoService interface {
