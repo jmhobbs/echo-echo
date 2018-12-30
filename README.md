@@ -57,3 +57,38 @@ A multi-protocol echo server for debugging.
     Hello!
     ^]
     telnet> Connection closed.
+
+## DNS Service
+
+The DNS service isn't exactly an echo (since that's not really how it works) but instead you specify domain to IP mappings
+and it will respond to A record queries with that information.
+
+Note that on a Mac, you will need to either kill mDNSResponder (who uses Bonjour anyway ;) or use a different port `-dns-addr`.
+
+    --[ Terminal A ]---------------------------------------------------------------------------------------
+    jmhobbs@localhost:~/ $ echo-echo -dns-map example.com=127.0.0.2 -dns-map google.com=10.0.0.1
+    2018/12/29 21:33:13 Listening for TCP on 127.0.0.1:9000
+    2018/12/29 21:33:13 Listening for DNS on 127.0.0.1:5353
+    2018/12/29 21:33:13 Listening for HTTP on 127.0.0.1:8080
+
+    --[ Terminal B ]---------------------------------------------------------------------------------------
+    jmhobbs@localhost:~/ $ dig -p 5353 @localhost example.com
+
+    ; <<>> DiG 9.10.6 <<>> -p 5353 @localhost example.com
+    ; (2 servers found)
+    ;; global options: +cmd
+    ;; Got answer:
+    ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 57302
+    ;; flags: qr rd; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+    ;; WARNING: recursion requested but not available
+
+    ;; QUESTION SECTION:
+    ;example.com.			IN	A
+
+    ;; ANSWER SECTION:
+    example.com.		3600	IN	A	127.0.0.2
+
+    ;; Query time: 0 msec
+    ;; SERVER: 127.0.0.1#5353(127.0.0.1)
+    ;; WHEN: Sat Dec 29 21:33:20 CST 2018
+    ;; MSG SIZE  rcvd: 56

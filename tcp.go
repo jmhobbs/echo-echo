@@ -18,8 +18,8 @@ func (t *TCPEchoService) Flags(fs *flag.FlagSet) {
 	fs.StringVar(&t.delimiter, "tcp-delimiter", "\n", "TCP service echo delimiter (one character)")
 }
 
-func (t *TCPEchoService) Run() error {
-	log.Println("Listening for TCP on", t.listen)
+func (t *TCPEchoService) Run(l *log.Logger) error {
+	l.Println("Listening on", t.listen)
 	s, err := net.Listen("tcp", t.listen)
 	if err != nil {
 		return err

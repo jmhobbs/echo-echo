@@ -11,15 +11,17 @@ import (
 
 type HTTPEchoService struct {
 	listen string
+	logger *log.Logger
 }
 
 func (h *HTTPEchoService) Flags(fs *flag.FlagSet) {
 	fs.StringVar(&h.listen, "http-addr", "127.0.0.1:8080", "HTTP listen address")
 }
 
-func (h *HTTPEchoService) Run() error {
-	http.HandleFunc("/", httpHandler)
-	log.Println("Listening for HTTP on", h.listen)
+func (h *HTTPEchoService) Run(l *log.Logger) error {
+	h.logger = l
+	http.HandleFunc("/", h.handler)
+	l.Println("Listening on", h.listen)
 	return http.ListenAndServe(h.listen, nil)
 }
 
@@ -59,7 +61,7 @@ func newHTTPRequestDebug(r *http.Request) HTTPRequestDebug {
 	}
 }
 
-func httpHandler(w http.ResponseWriter, r *http.Request) {
+func (h *HTTPEchoService) handler(w http.ResponseWriter, r *http.Request) {
 	// 1. Build up a representation of the HTTP request.
 	// 2. Output it as accept requests.
 	// TODO: Smarter Accept parsing, it can be much more complicated
@@ -82,7 +84,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		enc.SetIndent("", "  ")
 		err := enc.Encode(newHTTPRequestDebug(r))
 		if err != nil {
-			log.Println(err)
+			h.logger.Println(err)
 		}
 	case "text/html":
 		// TODO
